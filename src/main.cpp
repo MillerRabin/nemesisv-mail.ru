@@ -10,27 +10,33 @@ const char* password = "ifyouwanttohave";
 
 ESP8266WebServer server(80);
 
-
 Ticker lightTicker;
 int gBrightness = 100;
 bool gOn = false;
 int gCounter = 0;
-#define lamp 10
+int gDetected = 0;
+bool gDetectorEnabled = true;
+#define lamp 4
+#define detector 5
 
 void tick()
 {    
-  if (!gOn) {
+  gDetected = gDetectorEnabled ? digitalRead(detector) : false;  
+      
+  if (!gOn && !gDetected) {
     digitalWrite(lamp, 0);
     return;
   }
 
-  gCounter = (gCounter + 1) % 100;  
-  if (gCounter >= gBrightness) {
-    digitalWrite(lamp, 0);
+  if (gBrightness == 100) {
+    digitalWrite(lamp, 1);
     return;
   }
-  digitalWrite(lamp, 1);    
+
+  int val = (1023 / 100) * gBrightness;  
+  analogWrite(lamp, val);    
 }
+
 
 int range(int value, int min, int max) {
   if (value < min) return min;
@@ -40,21 +46,20 @@ int range(int value, int min, int max) {
 
 
 void setParameters(String name, int value) {
-  if (name == "brightness") {
-    gCounter = 0;    
-    gBrightness = range(value, 0, 100);
-  }
-  if (name == "on") {
+  if (name == "brightness")
+    gBrightness = range(value, 0, 100);  
+  if (name == "on")
     gOn = bool(value);
-    gCounter = 0;    
-  }
+  if (name == "detectorEnabled")
+    gDetectorEnabled = bool(value);
 }
 
 String formatResponse() {
   String onStr = gOn ? "1" : "0";
 
   return "{ \"on\":" + onStr + ",\n" + 
-            "\"brightness\":" + String(gBrightness) + "\n" + 
+            "\"brightness\":" + String(gBrightness) + ",\n" + 
+            "\"detectorEnablec\":" + String(gDetectorEnabled) + "\n" + 
           "}";
 }
 
@@ -108,11 +113,12 @@ void setupWiFI() {
 void setup()
 {  
   pinMode(lamp, OUTPUT);
+  pinMode(detector, INPUT);
   Serial.begin(115200);
   setupWiFI();
-  lightTicker.attach_ms(200, tick);
+  lightTicker.attach_ms(1000, tick);
 }
 
 void loop(){
-  server.handleClient();
+  server.handleClient();  
 }
