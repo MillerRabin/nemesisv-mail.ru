@@ -16,6 +16,7 @@ bool gOn = false;
 int gCounter = 0;
 int gDetected = 0;
 bool gDetectorEnabled = true;
+bool gLampIsOn = false;
 #define lamp 4
 #define detector 5
 
@@ -24,10 +25,12 @@ void tick()
   gDetected = gDetectorEnabled ? digitalRead(detector) : false;  
       
   if (!gOn && !gDetected) {
+    gLampIsOn = false;
     digitalWrite(lamp, 0);
     return;
   }
 
+  gLampIsOn = true;
   if (gBrightness == 100) {
     digitalWrite(lamp, 1);
     return;
@@ -59,7 +62,8 @@ String formatResponse() {
 
   return "{ \"on\":" + onStr + ",\n" + 
             "\"brightness\":" + String(gBrightness) + ",\n" + 
-            "\"detectorEnablec\":" + String(gDetectorEnabled) + "\n" + 
+            "\"detectorEnabled\":" + String(gDetectorEnabled) + ",\n" + 
+            "\"lampIsOn\":" + String(gLampIsOn) + "\n" + 
           "}";
 }
 
