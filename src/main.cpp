@@ -22,9 +22,9 @@ bool gLampIsOn = false;
 
 void tick()
 {    
-  gDetected = gDetectorEnabled ? digitalRead(detector) : false;  
+  gDetected = gDetectorEnabled ? digitalRead(detector) : 1;  
       
-  if (!gOn && !gDetected) {
+  if (!gOn && (gDetected == 0)) {
     gLampIsOn = false;
     digitalWrite(lamp, 0);
     return;
@@ -63,7 +63,8 @@ String formatResponse() {
   return "{ \"on\":" + onStr + ",\n" + 
             "\"brightness\":" + String(gBrightness) + ",\n" + 
             "\"detectorEnabled\":" + String(gDetectorEnabled) + ",\n" + 
-            "\"lampIsOn\":" + String(gLampIsOn) + "\n" + 
+            "\"lampIsOn\":" + String(gLampIsOn) + ",\n" + 
+            "\"detected\":" + String(gDetected) + "\n" + 
           "}";
 }
 
